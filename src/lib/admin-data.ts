@@ -1,11 +1,10 @@
-import { createAuthServerClient } from '@/lib/supabase/server';
+import { createAdminClient } from '@/lib/supabase/admin';
 import type { Category, MenuSettings, Offer, Salon, Service } from '@/types/db';
 
 /**
- * Admin data loaders. Reads use the signed-in admin's session client, so RLS
- * still applies (admins are allowed to read drafts via is_admin()). No
- * service-role master key is needed anywhere in the app's read path.
- * All writes also go through the signed-in session client (RLS + audit trail).
+ * Admin data loaders. Reads use the service-role client SERVER-SIDE ONLY —
+ * the admin must see drafts too. All writes go through the signed-in
+ * session client (RLS + audit trail), never through here.
  */
 
 export type ServiceWithCategory = Service & { category_name: string | null };
@@ -15,7 +14,7 @@ export async function loadAdminServices(filters: {
   categoryId?: string;
   status?: 'published' | 'draft';
 }): Promise<ServiceWithCategory[]> {
-  const supabase = await createAuthServerClient();
+  const supabase = createAdminClient();
   let query = supabase
     .from('services')
     .select('*, categories(name)')
@@ -41,7 +40,7 @@ export async function loadAdminServices(filters: {
 export async function loadAdminCategories(): Promise<
   (Category & { service_count: number })[]
 > {
-  const supabase = await createAuthServerClient();
+  const supabase = createAdminClient();
   const [categoriesQ, countsQ] = await Promise.all([
     supabase.from('categories').select('*').order('sort_order'),
     supabase.from('services').select('category_id'),
@@ -61,7 +60,7 @@ export async function loadAdminService(id: string): Promise<{
   service: (Service & { category_name: string | null }) | null;
   salonExists: boolean;
 }> {
-  const supabase = await createAuthServerClient();
+  const supabase = createAdminClient();
   const [{ data, error }, salonQ] = await Promise.all([
     supabase.from('services').select('*, categories(name)').eq('id', id).maybeSingle(),
     supabase.from('salons').select('id', { count: 'exact', head: true }),
@@ -83,7 +82,7 @@ export async function loadAdminDashboard(): Promise<{
     record_id: string | null;
   }[];
 }> {
-  const supabase = await createAuthServerClient();
+  const supabase = createAdminClient();
   const [catQ, svcQ, pubQ, draftQ, offQ, auditQ] = await Promise.all([
     supabase.from('categories').select('id', { count: 'exact', head: true }),
     supabase.from('services').select('id', { count: 'exact', head: true }),
@@ -118,7 +117,7 @@ export async function loadSalonSettings(): Promise<{
   salon: Salon | null;
   settings: MenuSettings | null;
 }> {
-  const supabase = await createAuthServerClient();
+  const supabase = createAdminClient();
   const [salonQ, settingsQ] = await Promise.all([
     supabase.from('salons').select('*').order('created_at').limit(1),
     supabase.from('menu_settings').select('*').limit(1),
@@ -140,7 +139,7 @@ export async function loadAdminOffers(): Promise<
     example_effect: string | null;
   }[]
 > {
-  const supabase = await createAuthServerClient();
+  const supabase = createAdminClient();
   const [offersQ, linksQ, servicesQ, categoriesQ] = await Promise.all([
     supabase.from('offers').select('*').order('start_date', { ascending: false }),
     supabase.from('offer_services').select('offer_id, service_id, category_id'),
@@ -211,7 +210,7 @@ export async function loadAdminOffers(): Promise<
 }
 
 export async function loadAuditPage(limit = 50) {
-  const supabase = await createAuthServerClient();
+  const supabase = createAdminClient();
   const { data, error } = await supabase
     .from('audit_logs')
     .select('*')

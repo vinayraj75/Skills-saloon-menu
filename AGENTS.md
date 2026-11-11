@@ -15,9 +15,7 @@ dashboard with **zero code changes**.
    No placeholder buttons, no dead code.
 3. **Secrets only in `.env.local`** (gitignored). Ship a `.env.example` with
    empty values. Never commit keys. The Supabase **service-role key must never
-   reach the browser** — server-side only. Admin reads use the signed-in
-   admin's session + RLS; the service key is optional and only used by the
-   one-time `/admin/setup` bootstrap (closed when the key is absent).
+   reach the browser** — server-side only.
 4. **Ask before any destructive action** (deleting files, resetting the DB).
 5. **After every phase:** run lint + build, fix all errors, summarize in 5 lines,
    then STOP and wait for the user to say "continue".
