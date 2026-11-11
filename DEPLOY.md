@@ -124,24 +124,24 @@ paste it as the password.
 
 ---
 
-## 5. Add the environment variables (the secret step)
+## 5. Add the environment variables
 
-Still on the import screen, open **Environment Variables** and add these four,
+Still on the import screen, open **Environment Variables** and add these three,
 one at a time. Copy the values from your `.env.local` file.
 
 | Name | Value |
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL` | your Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | your Supabase publishable/anon key |
-| `SUPABASE_SERVICE_ROLE_KEY` | your Supabase **secret** key |
 | `NEXT_PUBLIC_SITE_URL` | `https://skills-saloon.vercel.app` (we verify the exact name after the first deploy) |
 
 For each row: type the **Name**, paste the **Value**, leave all environments
 ticked (Production, Preview, Development), click **Add**.
 
-> ⚠️ The `SUPABASE_SERVICE_ROLE_KEY` is a master key. Vercel stores it encrypted,
-> and the app is built so it can never reach a customer's browser. Never paste it
-> into GitHub, chat, or a screenshot.
+> No service-role/secret key is needed. Admin reads use the signed-in admin's
+> Supabase session, and RLS still protects every row. If you ever add
+> `SUPABASE_SERVICE_ROLE_KEY`, it is a master key: never put it in GitHub, chat,
+> or a screenshot.
 
 Now click **Deploy**. Wait 1–3 minutes. You should see **Congratulations!**
 
@@ -177,24 +177,24 @@ This keeps admin login and password-reset links working from the internet.
 
 ## 8. Create the owner admin account (one time only)
 
-The setup link must be used **before** anyone else signs up, and only once.
+No secret key is required. Create the login in Supabase, then promote it once.
 
-1. In Vercel open **Settings → Environment Variables** and confirm
-   `ADMIN_SETUP_TOKEN` exists. (It is in your local `.env.local`; it was not
-   listed in Step 5 because it is optional for the build. If it is missing, add
-   it with the same value as local, then redeploy.)
-2. Open this address in your browser, replacing the two placeholders:
+1. Open **https://supabase.com/dashboard/project/qehdfwuprohlobsibazt/auth/users**
+2. Click **Add user → Create new user**.
+3. Enter the owner's email and a strong password, tick **Auto Confirm User**,
+   then click **Create user**.
+4. Open the **SQL Editor** and run this once, replacing the email:
 
+   ```sql
+   update public.profiles p
+   set role = 'admin', full_name = 'Skills Saloon Owner'
+   from auth.users u
+   where u.id = p.id and u.email = 'OWNER_EMAIL_HERE';
    ```
-   https://<your-vercel-link>/admin/setup?t=<your ADMIN_SETUP_TOKEN value>
-   ```
 
-3. Create the admin with the owner's email and a strong password.
-4. Log in at `https://<your-vercel-link>/admin/login`.
-5. **After it works:** delete the `ADMIN_SETUP_TOKEN` line from Vercel
-   (Settings → Environment Variables) and from `.env.local`, then redeploy.
-   The setup page self-locks permanently once an admin exists — this is a second
-   lock, on purpose.
+5. Log in at `https://<your-vercel-link>/admin/login` with that email/password.
+6. The one-time `/admin/setup` page is intentionally closed in this setup —
+   that is expected. Use the login page from now on.
 
 ---
 
@@ -257,8 +257,8 @@ Vercel automatically rebuilds and publishes in about a minute. Menu edits made i
 ## Security checklist before you print the poster
 
 - [ ] `.env.local` is **not** on GitHub (open the repo and search — it must be absent).
-- [ ] `SUPABASE_SERVICE_ROLE_KEY` appears **only** in `.env.local` and Vercel.
-- [ ] `ADMIN_SETUP_TOKEN` removed from both places after setup.
+- [ ] No secret/service key is stored in Vercel or in the repository.
+- [ ] The one-time setup page is closed (`Setup is closed` is the expected screen).
 - [ ] Supabase RLS is still enabled (it is; migrations 004–007 hardened it).
 - [ ] Only the owner knows the admin password; it is not shared over chat.
 - [ ] The QR page warning banner is gone.
