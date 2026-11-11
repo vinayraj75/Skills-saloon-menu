@@ -1,0 +1,80 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --font-serif: 'Playfair Display';
+  --font-sans: 'Inter';
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-paper text-ink antialiased;
+}
+
+/* thin, elegant scrollbar for the category strip */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* soft loading shimmer for skeletons */
+@keyframes shimmer {
+  0% { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+.shimmer {
+  animation: shimmer 1.6s infinite linear;
+  background: linear-gradient(90deg, #f0f0ee 0%, #e7e7e4 200px, #f0f0ee 400px);
+  background-size: 800px 100%;
+}
+
+/* ink-fade entrance for menu sections */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.fade-up {
+  animation: fadeUp 0.5s ease both;
+}
+
+/* ---------------------------------------------------------------- */
+/* Print: only the QR poster should come out of the printer          */
+/* ---------------------------------------------------------------- */
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  .qr-studio-area,
+  .qr-studio-area * {
+    visibility: visible !important;
+  }
+  .qr-studio-area {
+    position: absolute !important;
+    inset: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+  /* hide dashboard chrome inside studio area */
+  .qr-studio-area button,
+  .qr-studio-area .no-print,
+  .qr-poster ~ button {
+    display: none !important;
+  }
+  .qr-poster {
+    border: none !important;
+    box-shadow: none !important;
+    min-height: auto !important;
+    page-break-inside: avoid;
+  }
+  @page {
+    margin: 18mm;
+  }
+}
