@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { requireAdmin } from '@/lib/supabase/server';
 import { logOut } from '../actions';
+import { LogoMark } from '@/components/menu/LogoMark';
 import { LogOut, ExternalLink } from 'lucide-react';
 
 const MENU_URL = process.env.NEXT_PUBLIC_SITE_URL ?? 'http://localhost:3000';
@@ -22,11 +23,20 @@ export default async function DashboardLayout({ children }: { children: React.Re
     <div className="mx-auto min-h-dvh max-w-4xl">
       <header className="sticky top-0 z-40 border-b border-line bg-paper/95 backdrop-blur">
         <div className="flex items-center justify-between px-4 py-3">
-          <div>
-            <p className="font-serif text-lg font-semibold leading-tight">Skills Saloon</p>
-            <p className="text-[10px] tracking-luxe uppercase text-ink-soft">
-              Admin · {profile.full_name}
-            </p>
+          <div className="flex min-w-0 items-center gap-3">
+            <Link href="/admin" aria-label="Skills Saloon dashboard" className="shrink-0">
+              <LogoMark
+                src={null}
+                name="Skills Saloon"
+                className="h-10 w-10 border border-line bg-paper-raised p-1"
+              />
+            </Link>
+            <div className="min-w-0">
+              <p className="truncate font-serif text-lg font-semibold leading-tight">Skills Saloon</p>
+              <p className="truncate text-[10px] tracking-luxe uppercase text-ink-soft">
+                Admin · {profile.full_name}
+              </p>
+            </div>
           </div>
           <div className="flex items-center gap-2">
             <Link

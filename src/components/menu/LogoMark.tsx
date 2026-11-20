@@ -5,8 +5,9 @@ import { useState } from 'react';
 /**
  * Salon logo with graceful fallback:
  * 1. DB logo_url (admin-uploaded)
- * 2. /logo.png placed by the owner
- * 3. elegant serif monogram
+ * 2. /logo-mark.png — square mark cropped from the owner's logo
+ * 3. /logo.png — full logo lockup placed by the owner
+ * 4. elegant serif monogram
  */
 export function LogoMark({
   src,
@@ -19,7 +20,7 @@ export function LogoMark({
 }) {
   const [stage, setStage] = useState(0);
   const remote = src || null;
-  const candidates = [remote, '/logo.png', '/logo.svg'].filter(Boolean) as (string | null)[];
+  const candidates = [remote, '/logo-mark.png', '/logo.png', '/logo.svg'].filter(Boolean) as (string | null)[];
   const current = stage <= candidates.length - 1 ? candidates[stage] : null;
 
   if (!current) {
